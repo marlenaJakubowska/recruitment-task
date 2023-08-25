@@ -19,7 +19,7 @@ public class GitHubResponseToUserDtoMapper {
                 .build();
     }
 
-    private double calculate(UserGitHubResponse userGitHubResponse) {
+    double calculate(UserGitHubResponse userGitHubResponse) {
         if (userGitHubResponse.getFollowers() == 0) {
             return 0;
         } else {

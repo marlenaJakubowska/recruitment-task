@@ -3,8 +3,6 @@ package pl.marspc.recruitmenttask.dto;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
-import java.time.LocalDateTime;
-
 @Data
 public class UserGitHubResponse {
     private Long id;
@@ -13,7 +11,7 @@ public class UserGitHubResponse {
     private String avatarUrl;
     private String type;
     @JsonProperty("created_at")
-    private LocalDateTime createdAt;
+    private String createdAt;
     private String login;
     private int followers;
     @JsonProperty("public_repos")
