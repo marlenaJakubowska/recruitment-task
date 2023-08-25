@@ -23,8 +23,8 @@ public class UserController {
 
     @GetMapping(path = "/users/{login}", produces = "application/json")
     public ResponseEntity<UserDto> getUserData(@PathVariable(value = "login") String login){
-        userRequestService.incrementUserRequestCount(login);
         UserGitHubResponse userGitHubResponse = userApiService.fetchGitHubUserByLogin(login);
+        userRequestService.incrementUserRequestCount(login);
         return ResponseEntity.ok(gitHubResponseToUserDtoMapper.mapUserApiResponseToUserResponseDTO(userGitHubResponse));
     }
 }
