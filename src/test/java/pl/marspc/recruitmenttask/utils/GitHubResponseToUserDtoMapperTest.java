@@ -24,7 +24,6 @@ class GitHubResponseToUserDtoMapperTest {
 
     @Test
     void testMapUserApiResponseToUserResponseDTO() {
-        // Mock UserGitHubResponse data
         when(userGitHubResponse.getId()).thenReturn(123L);
         when(userGitHubResponse.getLogin()).thenReturn("octocat");
         when(userGitHubResponse.getName()).thenReturn("Octo Cat");
