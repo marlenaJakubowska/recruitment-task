@@ -7,10 +7,10 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import pl.marspc.recruitmenttask.entity.UserRequest;
 import pl.marspc.recruitmenttask.repository.UserRequestRepository;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.argThat;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import reactor.core.publisher.Mono;
+
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class UserRequestServiceTest {
@@ -21,11 +21,26 @@ class UserRequestServiceTest {
     @InjectMocks
     private UserRequestService userRequestService;
 
+//    @Test
+//    void testIncrementUserRequestCount_NewUserRequest() {
+//        when(userRequestRepository.findByLogin(anyString())).thenReturn(null);
+//
+//        userRequestService.incrementUserRequestCount("newToDBUser");
+//
+//        verify(userRequestRepository).findByLogin("newToDBUser");
+//        verify(userRequestRepository).save(argThat(userRequest ->
+//                userRequest.getLogin().equals("newToDBUser") && userRequest.getRequestCount() == 1L));
+//    }
+
     @Test
     void testIncrementUserRequestCount_NewUserRequest() {
-        when(userRequestRepository.findByLogin(anyString())).thenReturn(null);
+        when(userRequestRepository.findByLogin(anyString())).thenReturn(Mono.empty()); // Use Mono.empty() here
+        when(userRequestRepository.save(any(UserRequest.class))).thenReturn(Mono.just(UserRequest.builder()
+                .login("newToDBUser")
+                .requestCount(1L)
+                .build())); // Use Mono.just here
 
-        userRequestService.incrementUserRequestCount("newToDBUser");
+        userRequestService.incrementUserRequestCount("newToDBUser").block(); // Block to wait for completion
 
         verify(userRequestRepository).findByLogin("newToDBUser");
         verify(userRequestRepository).save(argThat(userRequest ->
@@ -39,11 +54,15 @@ class UserRequestServiceTest {
                 .requestCount(5L)
                 .build();
 
-        when(userRequestRepository.findByLogin(anyString())).thenReturn(existingUserRequest);
+        when(userRequestRepository.findByLogin(anyString())).thenReturn(Mono.just(existingUserRequest));
+        when(userRequestRepository.save(any(UserRequest.class))).thenReturn(Mono.just(existingUserRequest));
 
-        userRequestService.incrementUserRequestCount("existingUser");
+        userRequestService.incrementUserRequestCount("existingUser").block();
 
         verify(userRequestRepository).findByLogin("existingUser");
         verify(userRequestRepository).save(existingUserRequest);
+
+        verifyNoMoreInteractions(userRequestRepository);
+
     }
 }

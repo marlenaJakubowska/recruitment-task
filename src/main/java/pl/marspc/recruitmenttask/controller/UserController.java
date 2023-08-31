@@ -10,6 +10,7 @@ import pl.marspc.recruitmenttask.dto.UserDto;
 import pl.marspc.recruitmenttask.service.UserRequestService;
 import pl.marspc.recruitmenttask.service.UserApiService;
 import pl.marspc.recruitmenttask.utils.GitHubResponseToUserDtoMapper;
+import reactor.core.publisher.Mono;
 
 @Validated
 @RestController
@@ -29,10 +30,19 @@ public class UserController {
     }
 
     @GetMapping(path = "/users/{login}", produces = "application/json")
-    public ResponseEntity<UserDto> getUserData(@PathVariable(value = "login") @Pattern(regexp="^[a-zA-Z0-9-]+$",
-                                                           message = "Please provide correct login") String login){
-        UserGitHubResponse userGitHubResponse = userApiService.fetchGitHubUserByLogin(githubApiUrl, login);
+    public Mono<ResponseEntity<UserDto>> getUserData(@PathVariable String login){
         userRequestService.incrementUserRequestCount(login);
-        return ResponseEntity.ok(gitHubResponseToUserDtoMapper.mapUserApiResponseToUserResponseDTO(userGitHubResponse));
+
+        return userApiService.fetchGitHubUserByLogin(login)
+                .flatMap(userGitHubResponse -> userRequestService.incrementUserRequestCount(login)
+                        .map(userRequest -> {
+                            userRequestService.incrementUserRequestCount(login);
+                            UserDto userDto = gitHubResponseToUserDtoMapper.mapUserApiResponseToUserResponseDTO(userGitHubResponse);
+                            return ResponseEntity.ok(userDto);
+                        }));
+
+//        UserGitHubResponse userGitHubResponse = userApiService.fetchGitHubUserByLogin(githubApiUrl, login);
+//        userRequestService.incrementUserRequestCount(login);
+//        return ResponseEntity.ok(gitHubResponseToUserDtoMapper.mapUserApiResponseToUserResponseDTO(userGitHubResponse));
     }
 }
